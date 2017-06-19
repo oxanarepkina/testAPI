@@ -12,7 +12,7 @@ class apitest extends apiBaseClass
         elseif (strlen($name) >= 15)
             array_push($error_msg, 'Name is too long');
 
-        if (!preg_match("/[^".$name[0]."]/", $name)) {
+        if (preg_match("/([a-z])\\1/i", $name) > 0) {
             array_push($error_msg, 'Please enter valid name');
         }
 
@@ -47,7 +47,7 @@ class apitest extends apiBaseClass
 
         $this->validateNameOrThrowException($name);
 
-        if(APIConstants::GOOGLE_API_KEY == '')
+        if (APIConstants::GOOGLE_API_KEY == '')
             throw new IllegalApiParamsException("Input your Google API Key into file apiConstants.php");
 
         $url = 'https://www.googleapis.com/language/translate/v2?key=' . APIConstants::GOOGLE_API_KEY . '&q=' . rawurlencode($greet) . '&source=en&target=' . $language;
@@ -60,13 +60,12 @@ class apitest extends apiBaseClass
 
         $result_msg = $responseDecoded['data']['translations'][0]['translatedText'];
 
-        if(!isset($result_msg))
+        if (!isset($result_msg))
             throw new IllegalApiParamsException('Translation failed');
 
         $response = APIConstants::MESSAGE;
         $jsonObj->$response = $result_msg . ' ' . $name;
     }
-
 
 
     function getBase64($jsonObj, $params)

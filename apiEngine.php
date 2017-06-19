@@ -44,8 +44,6 @@ class APIEngine
     function callApiFunction($apiFunctionParams)
     {
         $resultFunctionCall = $this->createDefaultJson();
-
-        $response = APIConstants::MESSAGE;
         $status = APIConstants::STATUS;
 
         if (file_exists(APIConstants::API_FILE_NAME . '.php')) {
@@ -59,21 +57,26 @@ class APIEngine
                     $apiClass->$functionName($resultFunctionCall, $apiFunctionParams);
                     $resultFunctionCall->$status = APIConstants::SUCCESS;
                 } catch (IllegalApiParamsException $exception) {
-                    $resultFunctionCall->$response = $exception->getMessage();
-                    $resultFunctionCall->$status = APIConstants::ERROR;
+                    $this->setErrorResponse($resultFunctionCall, $exception->getMessage());
                 }
 
             } else {
-                $resultFunctionCall->$status = APIConstants::ERROR;
-                $resultFunctionCall->$response = 'Error given params';
+                $this->setErrorResponse($resultFunctionCall, 'Error given params');
             }
 
         } else {
-            $resultFunctionCall->$status = APIConstants::ERROR;
-            $resultFunctionCall->$response = 'File not found';
+            $this->setErrorResponse($resultFunctionCall, 'File not found');
         }
 
         return json_encode($resultFunctionCall);
+    }
+
+    function setErrorResponse($resultFunctionCall, $error_message){
+        $response = APIConstants::MESSAGE;
+        $status = APIConstants::STATUS;
+        http_response_code(500);
+        $resultFunctionCall->$status = APIConstants::ERROR;
+        $resultFunctionCall->$response = $error_message;
     }
 }
 
